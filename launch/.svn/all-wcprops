@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/ros/!svn/ver/44/fiducials/checkerboard_detection/launch
+END
+demo_camerapose.vcg
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/ros/!svn/ver/33/fiducials/checkerboard_detection/launch/demo_camerapose.vcg
+END
+static_pose.launch
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/ros/!svn/ver/10/fiducials/checkerboard_detection/launch/static_pose.launch
+END
+demo_boardpose.launch
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/ros/!svn/ver/43/fiducials/checkerboard_detection/launch/demo_boardpose.launch
+END
+demo_camerapose.launch
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/ros/!svn/ver/43/fiducials/checkerboard_detection/launch/demo_camerapose.launch
+END

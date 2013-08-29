@@ -1,0 +1,6 @@
+<launch>  
+    <node pkg="checkerboard_detection" type="static_pose" name="static_pose" >
+      <param name="pose_file" value="$(find checkerboard_detection)/cfg/pose.yml" />
+      <param name="frame_rate" value="10" />
+    </node>
+</launch>
