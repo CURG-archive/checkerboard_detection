@@ -1,35 +1,67 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.6)
+project(checkerboard_detection)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE RelWithDebInfo)
-#set(ROS_BUILD_TYPE Debug)
-rosbuild_init()
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS std_msgs geometry_msgs pose_msgs roscpp image_geometry tf image_transport)
 
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+## System dependencies are found with CMake's conventions
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(v4r_libraries)
 
 
-rosbuild_add_executable(checkerboard_pose include/estimate_pose.h src/estimate_pose.cpp include/estimate_pose_default_values.h)
-target_link_libraries(checkerboard_pose -lv4rcheckerboard)
-rosbuild_link_boost(checkerboard_pose thread)
+find_package(OpenCV)
+
+IF(NOT OpenCV_FOUND)
+  message(FATAL_ERROR "OpenCV not found. OpenCV is not installed or cmake can not find it. Install OpenCV first and then try again.
+If OpenCV is installed but cmake can not find it, set the OPENCV_DIR entry to the folder which contains the file OpenCVConfig.cmake")
+ENDIF(NOT OpenCV_FOUND)
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+		include  
+		${catkin_INCLUDE_DIRS} 
+		${pose_msgs_INCLUDE_DIRS}  
+		${v4r_libraries_INCLUDE_DIRS} 
+		${OpenCV_INCLUDE_DIRS} 
+		${Boost_INCLUDE_DIRS}
+)
+
+
+### Generate messages in the 'msg' folder
+# add_message_files(
+#   FILES
+#   message1.msg
+# )
+
+## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+# )
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#)
+
+## Generate added messages and services with any dependencies listed here
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#)
+
+catkin_package(
+  INCLUDE_DIRS include
+#  LIBRARIES test
+   CATKIN_DEPENDS geometry_msgs pose_msgs
+#  DEPENDS  
+)
+add_definitions( -DBOOST_FILESYSTEM_VERSION=2 )
+
+
+add_executable(checkerboard_pose include/estimate_pose.h src/estimate_pose.cpp include/estimate_pose_default_values.h)
+target_link_libraries(checkerboard_pose v4rcheckerboard ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+
