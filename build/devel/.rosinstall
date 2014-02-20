@@ -1,2 +1,0 @@
-- setup-file:
-    local-name: /home/armuser/ros/rosbuild_src/checkerboard_detection/build/devel/setup.sh
