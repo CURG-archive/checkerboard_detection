@@ -290,7 +290,9 @@ void PoseDetector::publishTf()
     if (!mValidPose) return;
     cv::Mat_<double> quat = mPose.quaterion();
     tf::Transform transform(tf::Quaternion(quat(0), quat(1), quat(2), quat(3)),tf::Vector3 ( mPose.x(), mPose.y(), mPose.z()));
-    mTF_broadcaster.sendTransform ( tf::StampedTransform ( transform, mTime, mBase_frame, mFrame_id ) );
+    //    mTF_broadcaster.sendTransform ( tf::StampedTransform ( transform, mTime, mBase_frame, mFrame_id ) );
+    ros::Time now = ros::Time::now();
+    mTF_broadcaster.sendTransform ( tf::StampedTransform ( transform, now + ros::Duration(2.0), mBase_frame, mFrame_id ) );
 }
 void PoseDetector::imageDummyCallback ( const sensor_msgs::ImageConstPtr& image_msg,
                                         const sensor_msgs::CameraInfoConstPtr& info_msg )
