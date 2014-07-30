@@ -187,10 +187,14 @@ const std::string PoseDetector::windowName()
 
 void PoseDetector::subscribe()
 {
+  ROS_INFO("Entered subscribe");
     if (mReadPoseFromFile) {
+      ROS_INFO("Subscribed to fake camera");
         mCameraSubscriber = mImageTransport.subscribeCamera ( mImageTopic, 1, &PoseDetector::imageDummyCallback, this );
 	mPose.read(mPoseFile);
-    } else {
+    } 
+    else {
+      ROS_INFO("Subscribed to real camera");
         mCameraSubscriber = mImageTransport.subscribeCamera ( mImageTopic, 1, &PoseDetector::imageCallback, this );
     }
 
@@ -222,6 +226,7 @@ void PoseDetector::initSkipCount ( int skip_frames )
 
 bool PoseDetector::compute_pose (pose_msgs::GetPose::Request &req, pose_msgs::GetPose::Response &resp)
 {
+  ROS_INFO("Entering subscriber");
     std::string topic = mCameraSubscriber.getInfoTopic ();
     if (topic.empty()) {
         subscribe();
@@ -303,7 +308,7 @@ void PoseDetector::imageDummyCallback ( const sensor_msgs::ImageConstPtr& image_
 void PoseDetector::imageCallback ( const sensor_msgs::ImageConstPtr& image_msg,
                                    const sensor_msgs::CameraInfoConstPtr& info_msg )
 {
-
+  ROS_INFO("Entered Callback!");
     mFrameCount++;
     if (mSkipCount < 1) return;
     if ((mFrameCount % mSkipCount) > 0) return;
@@ -312,7 +317,7 @@ void PoseDetector::imageCallback ( const sensor_msgs::ImageConstPtr& image_msg,
     image_geometry::PinholeCameraModel cam_model;
     try
     {
-
+      ROS_INFO("Processing new message");
         cv::Mat imgGray;
         // Bayer case copied from image_proc
         if (image_msg->encoding.find("bayer") != std::string::npos) {
@@ -334,19 +339,27 @@ void PoseDetector::imageCallback ( const sensor_msgs::ImageConstPtr& image_msg,
                 ROS_ERROR("[image_proc] Unsupported encoding '%s'", image_msg->encoding.c_str());
                 return;
             }
+	    ROS_INFO("Processed bayer image to grayscale\n");
             cv::cvtColor(imgBayer, imgBGR, code);
             cv::cvtColor(imgBGR, imgGray, CV_BGR2GRAY);
         } else {
-	  //Commented out because I'm not getting a grey scale image right now so I don't care --JW
-	  //cv_bridge::CvImagePtr cv_ptr;
-	  //cv_ptr = cv_bridge::toCvCopy( image_msg, sensor_msgs::image_encodings::MONO8 );
-	  //imgGray=*cv_ptr;
-        }
+	  ROS_INFO("Processed BGR image to grayscale\n");
+	  unsigned int image_type;
+	  if(image_msg->encoding.size() == 5)
+	    image_type = CV_8UC4;
+	  else
+	    image_type = CV_8UC3;
+	 const cv::Mat imgBGR(image_msg->height, image_msg->width, image_type, const_cast<uint8_t*>(&image_msg->data[0]), image_msg->step);
+	 	  
+	  cv::cvtColor(imgBGR, imgGray, CV_BGR2GRAY);
+
+        }	
         cam_model.fromCameraInfo ( info_msg );
         mTime = image_msg->header.stamp;
 	V4R::PoseD pose;
         if (find ( imgGray, cam_model.projectionMatrix(), cam_model.distortionCoeffs (), pose.rvec(), pose.tvec()))
         {
+	  ROS_INFO("Found checkerboard\n");
             switch (mPose2Compute) {
             case BOARD:
 	      mPose = pose;
@@ -374,7 +387,7 @@ void PoseDetector::imageCallback ( const sensor_msgs::ImageConstPtr& image_msg,
                 publishMarker();
             }
         }
-
+    
         if ( mDrawDebugImage )
         {
             cv::imshow ( mWindowName, imgGray );
